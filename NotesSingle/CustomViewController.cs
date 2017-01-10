@@ -39,9 +39,11 @@ To convert Markdown data in a stream or file:
 			Add(table);
 		}
 
-		protected void CreateTableItems()
+		protected  void CreateTableItems()
 		{
-			table.Source = new TableSource(NoteDatabase.GetNotesFromDatabase(), this);
+
+				table.Source = new TableSource(NoteDatabase.GetNotesFromDatabase(), this);
+	
 		}
 
 		public override bool PrefersStatusBarHidden()

@@ -21,6 +21,8 @@ namespace NotesSingle
 			set;
 		} = "";
 
-		public DateTime LastModified { get; set; } = DateTime.Now;
+		public DateTime LastChanged{ get; set; } = DateTime.Now;
+
+		public int User { get; set;}
 	}
 }

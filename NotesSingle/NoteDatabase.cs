@@ -1,8 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using Foundation;
 using SQLite;
+using RestSharp;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using Newtonsoft.Json;
 
 namespace NotesSingle
 {
@@ -10,9 +16,24 @@ namespace NotesSingle
 	{
 		public static List<Note> GetNotesFromDatabase()
 		{
+			var client = new RestClient("http://ndraz.com/NotesApi/");
+			var request = new RestRequest(Method.POST);
+			request.AddHeader("postman-token", "38bf6ae3-a903-878e-6eca-24c47100201d");
+			request.AddHeader("cache-control", "no-cache");
+			request.AddHeader("content-type", "application/json");
+			request.AddParameter("application/json", "{\n  \"action\": \"getall\"\n\n}", ParameterType.RequestBody);
+			IRestResponse response = client.Execute(request);
+			Console.WriteLine(response.Content);
+
+
+			//TODO get the deserialize working
+
+			 return JsonConvert.DeserializeObject<List<Note>>(response.Content);
+
+
 			var cmd = GetConnection();
 			//cmd.DropTable<Note>();
-			cmd.CreateTable<Note> ();
+			cmd.CreateTable<Note>();
 			var Notes = new List<Note>();
 			if (cmd.Table<Note>().Count() > 0)
 			{

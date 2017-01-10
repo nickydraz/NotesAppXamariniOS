@@ -62,7 +62,7 @@ namespace NotesSingle
 			{ cell = new UITableViewCell(UITableViewCellStyle.Subtitle, cellIdentifier); }
 
 			cell.TextLabel.Text = item;
-			cell.DetailTextLabel.Text = tableItems[indexPath.Row].LastModified.ToString();
+			cell.DetailTextLabel.Text = tableItems[indexPath.Row].LastChanged.ToString();
 
 			return cell;
 		}
