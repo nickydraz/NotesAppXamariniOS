@@ -2,31 +2,14 @@
 using CoreGraphics;
 using UIKit;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace NotesSingle
 {
 	public class CustomViewController : UIViewController
 	{
 		UITableView table;
-		List<Note> Notes;
-		public CustomViewController()
-		{
-			Notes = new List<Note>();
-
-			for (int i = 0; i < 10; i++)
-			{
-				Notes.Add(new Note { Title = "Note " + i, Content = @"# CommonMark.NET
-
-Implementation of [CommonMark] [1] specification (passes tests from version 0.27) in C# for converting Markdown documents to HTML.
-
-The current version of the library is also [available on NuGet] [nuget].
-
-## Usage
-
-To convert Markdown data in a stream or file:
-```C#" });
-			}
-		}
+		Thread updateThread;
 		public override void ViewDidLoad()
 		{
 			base.ViewDidLoad();
@@ -37,19 +20,55 @@ To convert Markdown data in a stream or file:
 			table.AutoresizingMask = UIViewAutoresizing.All;
 			CreateTableItems();
 			Add(table);
+
+			this.SetToolbarItems(new UIBarButtonItem[] {
+		new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace) { Width = width - 50 }
+		, new UIBarButtonItem(UIBarButtonSystemItem.Add, (s,e) => {
+		this.NavigationController.PushViewController(new CreateNoteViewController(), true);
+
+	})
+}, false);
+
+			this.NavigationController.ToolbarHidden = false;
+			//updateThread = new Thread(new System.Threading.ThreadStart(UpdateList));
+			//updateThread.Start();
+			
 		}
 
-		protected  void CreateTableItems()
+		protected async void CreateTableItems()
 		{
-
+			//List<Note> notes = await NoteDatabase.GetNotesFromDatabase();
+			//InvokeOnMainThread(() =>
+			//{
 				table.Source = new TableSource(NoteDatabase.GetNotesFromDatabase(), this);
-	
+			//});
 		}
 
-		public override bool PrefersStatusBarHidden()
+
+		public override void ViewWillAppear(bool animated)
 		{
-			return true;
+			base.ViewWillAppear(animated);
+			CreateTableItems();
+			//isRunning = true;
+			//if (!updateThread.IsAlive) updateThread.Start();
 		}
 
+		public override void ViewWillDisappear(bool animated)
+		{
+			base.ViewWillDisappear(animated);
+			isRunning = false;
+			
+		}
+
+		
+		bool isRunning = true;
+		public void UpdateList()
+		{
+			while (isRunning)
+			{
+				Thread.Sleep(5000);
+				CreateTableItems();
+			}
+		}
 	}
 }

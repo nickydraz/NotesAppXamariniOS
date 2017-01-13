@@ -21,10 +21,12 @@ namespace NotesSingle
 			get;
 			set;
 		}
+
 		public NoteDetailViewController(Note note)
 		{
 			CurrNote = note;
 		}
+
 
 		public override void ViewDidLoad()
 		{

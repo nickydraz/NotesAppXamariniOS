@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using UIKit;
 namespace NotesSingle
 {
@@ -7,7 +8,7 @@ namespace NotesSingle
 	{
 		public static Note CurrNote { get; set;}
 		UITextView textview;
-		UIButton saveBtn;
+
 
 		public EditViewController(Note note)
 		{
@@ -27,24 +28,24 @@ namespace NotesSingle
 			{
 				Frame = new CoreGraphics.CGRect(10, 50, w - 20, h - 100),
 				Text = CurrNote.Content,
-				BackgroundColor = new UIColor(240, 255, 255, 0),
+				BackgroundColor = new UIColor(240, 255, 255, 0)
 
 			};
 
 
-			saveBtn = UIButton.FromType(UIButtonType.RoundedRect);
-			saveBtn.Frame = new CoreGraphics.CGRect(10, View.Bounds.Bottom - 60, w - 20, 31.0f);
-			saveBtn.BackgroundColor = UIColor.White;
-			saveBtn.SetTitle("Save Changes", UIControlState.Normal);
-			saveBtn.Layer.CornerRadius = 5f;
-			saveBtn.TouchUpInside += (sender, e) =>
-			{
-				CurrNote.Content = textview.Text;
-				NoteDatabase.UpdateNote(CurrNote);
-			};
+			//saveBtn = UIButton.FromType(UIButtonType.RoundedRect);
+			//saveBtn.Frame = new CoreGraphics.CGRect(10, View.Bounds.Bottom - 60, w - 20, 31.0f);
+			//saveBtn.BackgroundColor = UIColor.White;
+			//saveBtn.SetTitle("Save Changes", UIControlState.Normal);
+			//saveBtn.Layer.CornerRadius = 5f;
+			//saveBtn.TouchUpInside += (sender, e) =>
+			//{
+			//	CurrNote.Content = textview.Text;
+			//	NoteDatabase.UpdateNote(CurrNote);
+			//};
 
 			Add(textview);
-			Add(saveBtn);
+			//Add(saveBtn);
 
 			UIApplication.Notifications.ObserveWillTerminate((sender, e) => {
 				UpdateNote();

@@ -43,7 +43,7 @@ namespace NotesSingle
 		{
 			//UIAlertController okAlertController = UIAlertController.Create(tableItems[indexPath.Row].Title, tableItems[indexPath.Row].Content, UIAlertControllerStyle.Alert);
 			//okAlertController.AddAction(UIAlertAction.Create("OK", UIAlertActionStyle.Default, null));
-			NoteDetailViewController detailController = new NoteDetailViewController(NoteDatabase.GetNoteById(tableItems[indexPath.Row].Id));
+			var detailController = new NoteDetailViewController(NoteDatabase.GetNoteById(tableItems[indexPath.Row].Id));
 			owner.NavigationController.PushViewController(detailController, true);
 
 			tableView.DeselectRow(indexPath, true);

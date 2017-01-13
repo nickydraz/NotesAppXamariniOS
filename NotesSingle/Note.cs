@@ -5,8 +5,8 @@ namespace NotesSingle
 {
 	public class Note
 	{
-		[PrimaryKey, AutoIncrement, Column("_id")]
-		public int Id { get; set;}
+		
+		public long Id { get; set;}
 
 
 		public string Title
