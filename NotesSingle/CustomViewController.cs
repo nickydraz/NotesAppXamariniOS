@@ -15,7 +15,7 @@ namespace NotesSingle
 			base.ViewDidLoad();
 			var width = View.Bounds.Width;
 			var height = View.Bounds.Height;
-			this.Title = "NDraz Notes";
+			Title = "NDraz Notes";
 			table = new UITableView(new CGRect(0, 0, width, height));
 			table.AutoresizingMask = UIViewAutoresizing.All;
 			CreateTableItems();
@@ -29,13 +29,13 @@ namespace NotesSingle
 	})
 }, false);
 
-			this.NavigationController.ToolbarHidden = false;
-			//updateThread = new Thread(new System.Threading.ThreadStart(UpdateList));
-			//updateThread.Start();
+			NavigationController.ToolbarHidden = false;
+			updateThread = new Thread(new ThreadStart(UpdateList));
+			updateThread.Start();
 			
 		}
 
-		protected async void CreateTableItems()
+		protected void CreateTableItems()
 		{
 			//List<Note> notes = await NoteDatabase.GetNotesFromDatabase();
 			//InvokeOnMainThread(() =>
@@ -49,8 +49,8 @@ namespace NotesSingle
 		{
 			base.ViewWillAppear(animated);
 			CreateTableItems();
-			//isRunning = true;
-			//if (!updateThread.IsAlive) updateThread.Start();
+			isRunning = true;
+			if (!updateThread.IsAlive) updateThread.Start();
 		}
 
 		public override void ViewWillDisappear(bool animated)

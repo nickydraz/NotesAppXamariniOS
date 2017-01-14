@@ -64,9 +64,7 @@ namespace NotesSingle
 			base.ViewWillDisappear(animated);
 
 			isRunning = false;
-
 			UpdateNote();
-
 		}
 
 		
@@ -88,8 +86,15 @@ namespace NotesSingle
 
 		public void UpdateNote()
 		{
-			CurrNote.Content = textview.Text;
-			NoteDatabase.UpdateNote(CurrNote);
+			try
+			{
+				CurrNote.Content = textview.Text;
+				NoteDatabase.UpdateNote(CurrNote);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
 		}
 	}
 }
