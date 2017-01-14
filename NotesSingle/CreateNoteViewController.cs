@@ -1,20 +1,16 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using UIKit;
 
 namespace NotesSingle
 {
-	public class CreateNoteViewController: UIViewController
+    public class CreateNoteViewController: UIViewController
 	{
 		public static Note CurrNote { get; set; } = null;
-		UITextView title;
-		UITextView textview;
+		UITextView _title;
+		UITextView _textview;
 
-		public CreateNoteViewController()
-		{
-		}
-
-		public override void ViewDidLoad()
+	    public override void ViewDidLoad()
 		{
 			base.ViewDidLoad();
 
@@ -23,83 +19,86 @@ namespace NotesSingle
 			var h = View.Bounds.Height;
 			var w = View.Bounds.Width;
 
-			title = new UITextView()
+			_title = new UITextView()
 			{
 				Frame = new CoreGraphics.CGRect(10, 50, w - 20, 100),
 				BackgroundColor = UIColor.LightGray
 			};
 
-			textview = new UITextView()
+			_textview = new UITextView()
 			{
 				Frame = new CoreGraphics.CGRect(10, 150, w - 20, h - 100),
 				
 				BackgroundColor = new UIColor(240, 255, 255, 0)
 			};
 
-			Add(title);
-			Add(textview);
+			Add(_title);
+			Add(_textview);
 
-			UIApplication.Notifications.ObserveWillTerminate((sender, e) =>
+			UIApplication.Notifications.ObserveWillTerminate(async (sender, e) =>
 			{
-				SaveNote();
+				await SaveNote();
 			});
-			UIApplication.Notifications.ObserveDidEnterBackground((sender, e) =>
+			UIApplication.Notifications.ObserveDidEnterBackground(async (sender, e) =>
 			{
-				SaveNote();
+				await SaveNote();
 			});
 
-			var saveThread = new Thread(new System.Threading.ThreadStart(SaveTimer));
+			var saveThread = new Thread(SaveTimer);
 			saveThread.Start();
 		}
 
-		public override void ViewWillDisappear(bool animated)
+		public override async void ViewWillDisappear(bool animated)
 		{
 			base.ViewWillDisappear(animated);
-			SaveNote();
+		    _isRunning = false;
+			await SaveNote();
 		}
 
-		bool isRunning = true;
-		public void SaveTimer()
+		bool _isRunning = true;
+		public async void SaveTimer()
 		{
-			while (isRunning)
+			while (_isRunning)
 			{
 				Thread.Sleep(5000);
 				if (CurrNote != null)
 				{
 					InvokeOnMainThread(() =>
 					{
-						CurrNote.Content = textview.Text;
+						CurrNote.Content = _textview.Text;
 					});
 
 					}
-				//Don't update on the UI thread, in case it takes longer
-				SaveNote();
+                //Don't update on the UI thread, in case it takes longer
+                await SaveNote();
 				
 			}
 		}
 
-		public void SaveNote()
-		{
-			InvokeOnMainThread(() =>
-			{
-				if (CurrNote == null && textview.Text != null)
-				{
-					if (!textview.Text.Equals(""))
-					{
-						string sTitle = title.Text;
-						string sContent = textview.Text;
-						CurrNote = NoteDatabase.InsertNote(sTitle, sContent);
-					}
-				}
-				else if (CurrNote != null) {
-					CurrNote.Title = title.Text;
-					CurrNote.Content = textview.Text;
-					NoteDatabase.UpdateNote(CurrNote);
-				}
-			});
-
-
-		}
+	    public async Task SaveNote()
+	    {
+	        await Task.Run(() =>
+	        {
+	            InvokeOnMainThread(async () =>
+	            {
+	                if (CurrNote == null && _textview.Text != null)
+	                {
+	                    if (!_textview.Text.Equals(""))
+	                    {
+	                        string sTitle = _title.Text;
+	                        string sContent = _textview.Text;
+	                        CurrNote = await NoteDatabase.InsertNote(sTitle, sContent);
+	                    }
+	                }
+	                else if (CurrNote != null)
+	                {
+	                    CurrNote.Title = _title.Text;
+	                    CurrNote.Content = _textview.Text;
+	                    await NoteDatabase.UpdateNote(CurrNote);
+	                }
+	            });
+	        });
+	    }
 
 
 	}

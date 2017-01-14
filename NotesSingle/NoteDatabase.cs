@@ -1,19 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using Foundation;
-using SQLite;
+﻿using Newtonsoft.Json;
 using RestSharp;
-
-using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace NotesSingle
 {
-	public static class NoteDatabase
+    public static class NoteDatabase
 	{
-		public static List<Note> GetNotesFromDatabase()
+		public static async Task<List<Note>> GetNotesFromDatabase()
 		{
 			var client = new RestClient("http://ndraz.com/NotesApi/");
 			var request = new RestRequest(Method.POST);
@@ -21,7 +16,7 @@ namespace NotesSingle
 			request.AddHeader("cache-control", "no-cache");
 			request.AddHeader("content-type", "application/json");
 			request.AddParameter("application/json", "{\n  \"action\": \"getall\"\n\n}", ParameterType.RequestBody);
-			IRestResponse response = client.Execute(request);
+			var response = await client.ExecuteTaskAsync(request); 
 			//Console.WriteLine(response.Content);
 
 			var start = response.Content.IndexOf('[');
@@ -31,7 +26,7 @@ namespace NotesSingle
 			return notes;
 		}
 
-		public static Note GetNoteById(long id)
+		public static async Task<Note> GetNoteById(long id)
 		{
 			var client = new RestClient("http://ndraz.com/NotesApi/");
 			var request = new RestRequest(Method.POST);
@@ -39,7 +34,7 @@ namespace NotesSingle
 			request.AddHeader("cache-control", "no-cache");
 			request.AddHeader("content-type", "application/json");
 			request.AddParameter("application/json", "{\n\t\"action\": \"getid\",\n\t\"Id\": \"" + id + "\"\n}", ParameterType.RequestBody);
-			IRestResponse response = client.Execute(request);
+			var response = await client.ExecuteTaskAsync(request);
 
 			var start = response.Content.IndexOf('[');
 			var end = response.Content.IndexOf(']');
@@ -49,7 +44,7 @@ namespace NotesSingle
 			return note[0];
 		}
 
-		public static void UpdateNote(Note note)
+		public static async Task UpdateNote(Note note)
 		{
 			var id = note.Id;
 			var title = note.Title;
@@ -61,12 +56,12 @@ namespace NotesSingle
 			request.AddHeader("cache-control", "no-cache");
 			request.AddHeader("content-type", "application/json");
 			request.AddParameter("application/json", "{\n\t\"action\": \"update\",\n\t\"Id\": \"" + id + "\",\n\t\"Title\": \"" + EscapeForJson(title) + "\",\n\t\"Content\": \"" + EscapeForJson(content) + "\"\n}", ParameterType.RequestBody);
-			IRestResponse response = client.Execute(request);
+			await client.ExecuteTaskAsync(request);
 
 			//Console.WriteLine(response.Content);
 		}
 
-		public static Note InsertNote(string title, string content)
+		public static async Task<Note> InsertNote(string title, string content)
 		{
 			var client = new RestClient("http://ndraz.com/NotesApi/");
 			var request = new RestRequest(Method.POST);
@@ -74,9 +69,9 @@ namespace NotesSingle
 			request.AddHeader("cache-control", "no-cache");
 			request.AddHeader("content-type", "application/json");
 			request.AddParameter("application/json", "{\n\t\"action\": \"add\",\n\t\"Title\": \"" + EscapeForJson(title) + "\",\n\t\"Content\": \"" + EscapeForJson(content) + "\",\n\t\"User\": \"1\"\n}", ParameterType.RequestBody);
-			IRestResponse response = client.Execute(request);
+			var response = await client.ExecuteTaskAsync(request);
 
-			Dictionary<string, string> obj = JsonConvert.DeserializeObject<Dictionary<string, string>>(response.Content);
+			var obj = JsonConvert.DeserializeObject<Dictionary<string, string>>(response.Content);
 
 			return new Note()
 			{

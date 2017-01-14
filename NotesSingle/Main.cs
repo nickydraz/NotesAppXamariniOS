@@ -1,12 +1,8 @@
 ﻿using UIKit;
-using System.IO;
-using System;
-using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace NotesSingle
 {
-	public class Application
+    public class Application
 	{
 		// This is the main entry point of the application.
 		static void Main(string[] args)

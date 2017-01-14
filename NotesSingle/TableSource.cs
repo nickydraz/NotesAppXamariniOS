@@ -1,22 +1,22 @@
-﻿using System;
+﻿using Foundation;
+using System;
 using System.Collections.Generic;
-using System.IO;
-using Foundation;
+using System.Globalization;
 using UIKit;
 
 namespace NotesSingle
 {
-	public class TableSource : UITableViewSource
+    public class TableSource : UITableViewSource
 	{
 
-		protected List<Note> tableItems;
-		protected string cellIdentifier = "TableCell";
-		CustomViewController owner;
+		private List<Note> _tableItems;
+		private string _cellIdentifier = "TableCell";
+		CustomViewController _owner;
 
 		public TableSource(List<Note> items, CustomViewController owner)
 		{
-			tableItems = items;
-			this.owner = owner;
+			_tableItems = items;
+			this._owner = owner;
 
 		}
 
@@ -33,18 +33,18 @@ namespace NotesSingle
 		/// </summary>
 		public override nint RowsInSection(UITableView tableview, nint section)
 		{
-			return tableItems.Count;
+			return _tableItems.Count;
 		}
 
 		/// <summary>
 		/// Called when a row is touched
 		/// </summary>
-		public override void RowSelected(UITableView tableView, NSIndexPath indexPath)
+		public override async void RowSelected(UITableView tableView, NSIndexPath indexPath)
 		{
 			//UIAlertController okAlertController = UIAlertController.Create(tableItems[indexPath.Row].Title, tableItems[indexPath.Row].Content, UIAlertControllerStyle.Alert);
 			//okAlertController.AddAction(UIAlertAction.Create("OK", UIAlertActionStyle.Default, null));
-			var detailController = new NoteDetailViewController(NoteDatabase.GetNoteById(tableItems[indexPath.Row].Id));
-			owner.NavigationController.PushViewController(detailController, true);
+			var detailController = new NoteDetailViewController(await NoteDatabase.GetNoteById(_tableItems[indexPath.Row].Id));
+			_owner.NavigationController.PushViewController(detailController, true);
 
 			tableView.DeselectRow(indexPath, true);
 		}
@@ -54,15 +54,15 @@ namespace NotesSingle
 		/// </summary>
 		public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
 		{
-			UITableViewCell cell = tableView.DequeueReusableCell(cellIdentifier);
-			string item = tableItems[indexPath.Row].Title;
+			UITableViewCell cell = tableView.DequeueReusableCell(_cellIdentifier);
+			string item = _tableItems[indexPath.Row].Title;
 
 			//---- if there are no cells to reuse, create a new one
 			if (cell == null)
-			{ cell = new UITableViewCell(UITableViewCellStyle.Subtitle, cellIdentifier); }
+			{ cell = new UITableViewCell(UITableViewCellStyle.Subtitle, _cellIdentifier); }
 
 			cell.TextLabel.Text = item;
-			cell.DetailTextLabel.Text = tableItems[indexPath.Row].LastChanged.ToString();
+			cell.DetailTextLabel.Text = _tableItems[indexPath.Row].LastChanged.ToString(CultureInfo.InvariantCulture);
 
 			return cell;
 		}

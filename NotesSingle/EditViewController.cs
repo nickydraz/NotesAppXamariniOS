@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using UIKit;
 namespace NotesSingle
 {
-	public class EditViewController : UIViewController
+    public class EditViewController : UIViewController
 	{
 		public static Note CurrNote { get; set;}
-		UITextView textview;
+	    private UITextView _textview;
 
 
 		public EditViewController(Note note)
@@ -24,14 +24,13 @@ namespace NotesSingle
 			var h = View.Bounds.Height;
 			var w = View.Bounds.Width;
 
-		 	textview = new UITextView()
+		 	_textview = new UITextView()
 			{
 				Frame = new CoreGraphics.CGRect(10, 50, w - 20, h - 100),
 				Text = CurrNote.Content,
 				BackgroundColor = new UIColor(240, 255, 255, 0)
 
 			};
-
 
 			//saveBtn = UIButton.FromType(UIButtonType.RoundedRect);
 			//saveBtn.Frame = new CoreGraphics.CGRect(10, View.Bounds.Bottom - 60, w - 20, 31.0f);
@@ -44,52 +43,52 @@ namespace NotesSingle
 			//	NoteDatabase.UpdateNote(CurrNote);
 			//};
 
-			Add(textview);
+			Add(_textview);
 			//Add(saveBtn);
 
-			UIApplication.Notifications.ObserveWillTerminate((sender, e) => {
-				UpdateNote();
+			UIApplication.Notifications.ObserveWillTerminate(async (sender, e) => {
+				await UpdateNote();
 			});
-			UIApplication.Notifications.ObserveDidEnterBackground((sender, e) =>
+			UIApplication.Notifications.ObserveDidEnterBackground(async (sender, e) =>
 			{
-				UpdateNote();
+				await UpdateNote();
 			});
 
-			var saveThread = new Thread(new System.Threading.ThreadStart(SaveTimer));
+			var saveThread = new Thread(SaveTimer);
 			saveThread.Start();
 		}
 
-		public override void ViewWillDisappear(bool animated)
+		public override async void ViewWillDisappear(bool animated)
 		{
 			base.ViewWillDisappear(animated);
 
-			isRunning = false;
-			UpdateNote();
+			_isRunning = false;
+			await UpdateNote();
 		}
 
-		
-		bool isRunning = true;
-		public void SaveTimer()
+
+	    private bool _isRunning = true;
+		public async void SaveTimer()
 		{
-			while (isRunning)
+			while (_isRunning)
 			{
 				Thread.Sleep(5000);
 				InvokeOnMainThread(() =>
 				{
-					CurrNote.Content = textview.Text;
+					CurrNote.Content = _textview.Text;
 				});
  				
 				//Don't update on the UI thread, in case it takes longer
-				NoteDatabase.UpdateNote(CurrNote);
+				await NoteDatabase.UpdateNote(CurrNote);
 			}
 		}
 
-		public void UpdateNote()
+		public async Task UpdateNote()
 		{
 			try
 			{
-				CurrNote.Content = textview.Text;
-				NoteDatabase.UpdateNote(CurrNote);
+				CurrNote.Content = _textview.Text;
+				await NoteDatabase.UpdateNote(CurrNote);
 			}
 			catch (Exception ex)
 			{

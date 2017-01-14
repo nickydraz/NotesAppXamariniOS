@@ -1,73 +1,68 @@
-﻿using System;
-using CoreGraphics;
-using UIKit;
-using System.Collections.Generic;
+﻿using CoreGraphics;
 using System.Threading;
+using System.Threading.Tasks;
+using UIKit;
 
 namespace NotesSingle
 {
-	public class CustomViewController : UIViewController
+    public class CustomViewController : UIViewController
 	{
-		UITableView table;
-		Thread updateThread;
-		public override void ViewDidLoad()
+	    private UITableView _table;
+	    private Thread _updateThread;
+		public override async void ViewDidLoad()
 		{
 			base.ViewDidLoad();
 			var width = View.Bounds.Width;
 			var height = View.Bounds.Height;
 			Title = "NDraz Notes";
-			table = new UITableView(new CGRect(0, 0, width, height));
-			table.AutoresizingMask = UIViewAutoresizing.All;
-			CreateTableItems();
-			Add(table);
+			_table = new UITableView(new CGRect(0, 0, width, height)) {AutoresizingMask = UIViewAutoresizing.All};
+			await CreateTableItems();
+			Add(_table);
 
-			this.SetToolbarItems(new UIBarButtonItem[] {
-		new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace) { Width = width - 50 }
-		, new UIBarButtonItem(UIBarButtonSystemItem.Add, (s,e) => {
-		this.NavigationController.PushViewController(new CreateNoteViewController(), true);
-
-	})
-}, false);
+			SetToolbarItems(new[] {
+		    new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace) { Width = width - 50 },
+                new UIBarButtonItem(UIBarButtonSystemItem.Add, (s,e) => 
+                { NavigationController.PushViewController(new CreateNoteViewController(), true); })}, false);
 
 			NavigationController.ToolbarHidden = false;
-			updateThread = new Thread(new ThreadStart(UpdateList));
-			updateThread.Start();
+			_updateThread = new Thread(UpdateList);
+			_updateThread.Start();
 			
 		}
 
-		protected void CreateTableItems()
+		protected async Task CreateTableItems()
 		{
-			//List<Note> notes = await NoteDatabase.GetNotesFromDatabase();
-			//InvokeOnMainThread(() =>
-			//{
-				table.Source = new TableSource(NoteDatabase.GetNotesFromDatabase(), this);
-			//});
+			var notes = await NoteDatabase.GetNotesFromDatabase();
+			InvokeOnMainThread(() =>
+			{
+				_table.Source = new TableSource( notes, this);
+			});
 		}
 
 
-		public override void ViewWillAppear(bool animated)
+		public override async void ViewWillAppear(bool animated)
 		{
 			base.ViewWillAppear(animated);
-			CreateTableItems();
-			isRunning = true;
-			if (!updateThread.IsAlive) updateThread.Start();
+			await CreateTableItems();
+			_isRunning = true;
+			if (!_updateThread.IsAlive) _updateThread.Start();
 		}
 
 		public override void ViewWillDisappear(bool animated)
 		{
 			base.ViewWillDisappear(animated);
-			isRunning = false;
+			_isRunning = false;
 			
 		}
 
-		
-		bool isRunning = true;
-		public void UpdateList()
+
+		private bool _isRunning = true;
+		public async void UpdateList()
 		{
-			while (isRunning)
+			while (_isRunning)
 			{
 				Thread.Sleep(5000);
-				CreateTableItems();
+				await CreateTableItems();
 			}
 		}
 	}
