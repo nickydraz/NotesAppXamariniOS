@@ -1,4 +1,5 @@
-﻿using Foundation;
+﻿using System;
+using Foundation;
 using UIKit;
 
 namespace NotesSingle
@@ -18,21 +19,29 @@ namespace NotesSingle
 
 		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
-			// Override point for customization after application launch.
-			// If not required for your application you can safely delete this method
-			// create a new window instance based on the screen size
-			Window = new UIWindow(UIScreen.MainScreen.Bounds);
+			try
+			{
+				// Override point for customization after application launch.
+				// If not required for your application you can safely delete this method
+				// create a new window instance based on the screen size
+				Window = new UIWindow(UIScreen.MainScreen.Bounds);
 
-			var cvc = new CustomViewController();
+				var cvc = new CustomViewController();
 
-			var navController = new UINavigationController(cvc);
+				var navController = new UINavigationController(cvc);
 
-			Window.RootViewController = navController;
+				Window.RootViewController = navController;
 
-			// make the window visible
-			Window.MakeKeyAndVisible();
+				// make the window visible
+				Window.MakeKeyAndVisible();
 
-			return true;
+				return true;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("Error in FinishedLaunching: " + ex.Message);
+				return false;
+			}
 		}
 
 		public override void OnResignActivation(UIApplication application)

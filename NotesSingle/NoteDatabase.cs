@@ -8,25 +8,44 @@ namespace NotesSingle
 {
     public static class NoteDatabase
 	{
-		public static async Task<List<Note>> GetNotesFromDatabase()
+		public static  List<Note> GetNotesFromDatabase()
 		{
-			var client = new RestClient("http://ndraz.com/NotesApi/");
-			var request = new RestRequest(Method.POST);
-			request.AddHeader("postman-token", "38bf6ae3-a903-878e-6eca-24c47100201d");
-			request.AddHeader("cache-control", "no-cache");
-			request.AddHeader("content-type", "application/json");
-			request.AddParameter("application/json", "{\n  \"action\": \"getall\"\n\n}", ParameterType.RequestBody);
-			var response = await client.ExecuteTaskAsync(request); 
-			//Console.WriteLine(response.Content);
+			try
+			{
+				var client = new RestClient("http://ndraz.com:/NotesApi/");
+				var request = new RestRequest(Method.POST);
+				request.AddHeader("postman-token", "38bf6ae3-a903-878e-6eca-24c47100201d");
+				request.AddHeader("cache-control", "no-cache");
+				request.AddHeader("content-type", "application/json");
+				request.AddParameter("application/json", "{\n  \"action\": \"getall\"\n\n}", ParameterType.RequestBody);
 
-			var start = response.Content.IndexOf('[');
-			var end = response.Content.IndexOf(']');
-			var result = response.Content.Substring(start, end - start + 1);
-			var notes = JsonConvert.DeserializeObject<List<Note>>(result);
-			return notes;
+				var response = client.Execute(request);
+				//Console.WriteLine(response.Content);
+				
+				var start = response.Content.IndexOf('[');
+				var end = response.Content.IndexOf(']');
+				if (start < 0 || end < 0)
+				{
+					Console.WriteLine("RestSharp Error Message: " + response.ErrorException.Message);
+					//Sometimes the failure is just a weird bug (supposedly in Mono) and not a problem with the call
+					//Try again and see what happens
+					response = client.Execute(request);
+					start = response.Content.IndexOf('[');
+					end = response.Content.IndexOf(']');
+				}
+
+				var result = response.Content.Substring(start, end - start + 1);
+				var notes = JsonConvert.DeserializeObject<List<Note>>(result);
+				return notes;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("Error in Get All: " + ex.Message);
+				return new List<Note>(); //return an empty list so the app doesn't crash
+			}
 		}
 
-		public static async Task<Note> GetNoteById(long id)
+		public static Note GetNoteById(long id)
 		{
 			var client = new RestClient("http://ndraz.com/NotesApi/");
 			var request = new RestRequest(Method.POST);
@@ -34,14 +53,33 @@ namespace NotesSingle
 			request.AddHeader("cache-control", "no-cache");
 			request.AddHeader("content-type", "application/json");
 			request.AddParameter("application/json", "{\n\t\"action\": \"getid\",\n\t\"Id\": \"" + id + "\"\n}", ParameterType.RequestBody);
-			var response = await client.ExecuteTaskAsync(request);
+			var response = client.Execute(request);
 
 			var start = response.Content.IndexOf('[');
 			var end = response.Content.IndexOf(']');
-			var result = response.Content.Substring(start, end - start + 1);
-			var note = JsonConvert.DeserializeObject<List<Note>>(result);
-			//Console.WriteLine(note[0].Id);
-			return note[0];
+			if (start < 0 || end < 0)
+			{
+				Console.WriteLine("RestSharp Error Message: " + response.ErrorException.Message);
+				//Sometimes the failure is just a weird bug (supposedly in Mono) and not a problem with the call
+				//Try again and see what happens
+				response = client.Execute(request);
+				start = response.Content.IndexOf('[');
+				end = response.Content.IndexOf(']');
+			}
+
+			try
+			{
+				var result = response.Content.Substring(start, end - start + 1);
+				var note = JsonConvert.DeserializeObject<List<Note>>(result);
+				//Console.WriteLine(note[0].Id);
+				return note[0];
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("Error in Get By ID: " + ex.Message);
+				return null;
+			}
+
 		}
 
 		public static async Task UpdateNote(Note note)
@@ -70,6 +108,11 @@ namespace NotesSingle
 			request.AddHeader("content-type", "application/json");
 			request.AddParameter("application/json", "{\n\t\"action\": \"add\",\n\t\"Title\": \"" + EscapeForJson(title) + "\",\n\t\"Content\": \"" + EscapeForJson(content) + "\",\n\t\"User\": \"1\"\n}", ParameterType.RequestBody);
 			var response = await client.ExecuteTaskAsync(request);
+
+			if (response.Content == null || response.Content.Equals(""))
+			{
+				response = await client.ExecuteTaskAsync(request);
+			}
 
 			var obj = JsonConvert.DeserializeObject<Dictionary<string, string>>(response.Content);
 

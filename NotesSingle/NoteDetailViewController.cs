@@ -70,12 +70,12 @@ namespace NotesSingle
 			this.NavigationController.PushViewController(new EditViewController(CurrNote), true);
 		}
 
-		public override async void ViewWillAppear(bool animated)
+		public override void ViewWillAppear(bool animated)
 		{
 			base.ViewWillAppear(animated);
 
 			//Refresh the note on the screen
-			CurrNote = await NoteDatabase.GetNoteById(CurrNote.Id);
+			CurrNote = NoteDatabase.GetNoteById(CurrNote.Id);
 			UpdateView();
 			_isrunning = true;
 		}
@@ -92,9 +92,10 @@ namespace NotesSingle
 			while (_isrunning)
 			{
 				Thread.Sleep(5000);
-				InvokeOnMainThread(async () =>
+				CurrNote = NoteDatabase.GetNoteById(CurrNote.Id);
+				InvokeOnMainThread(() =>
 				{
-					CurrNote = await NoteDatabase.GetNoteById(CurrNote.Id);
+					//CurrNote =  NoteDatabase.GetNoteById(CurrNote.Id);
 					UpdateView();
 				});
 			}

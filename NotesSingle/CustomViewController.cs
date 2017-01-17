@@ -2,6 +2,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 using UIKit;
+using System;
+using System.Collections.Generic;
 
 namespace NotesSingle
 {
@@ -9,43 +11,65 @@ namespace NotesSingle
 	{
 	    private UITableView _table;
 	    private Thread _updateThread;
-		public override async void ViewDidLoad()
+		public override void ViewDidLoad()
 		{
 			base.ViewDidLoad();
-			var width = View.Bounds.Width;
-			var height = View.Bounds.Height;
-			Title = "NDraz Notes";
-			_table = new UITableView(new CGRect(0, 0, width, height)) {AutoresizingMask = UIViewAutoresizing.All};
-			await CreateTableItems();
-			Add(_table);
-
-			SetToolbarItems(new[] {
-		    new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace) { Width = width - 50 },
-                new UIBarButtonItem(UIBarButtonSystemItem.Add, (s,e) => 
-                { NavigationController.PushViewController(new CreateNoteViewController(), true); })}, false);
-
-			NavigationController.ToolbarHidden = false;
-			_updateThread = new Thread(UpdateList);
-			_updateThread.Start();
-			
-		}
-
-		protected async Task CreateTableItems()
-		{
-			var notes = await NoteDatabase.GetNotesFromDatabase();
-			InvokeOnMainThread(() =>
+			try
 			{
-				_table.Source = new TableSource( notes, this);
-			});
+				var width = View.Bounds.Width;
+				var height = View.Bounds.Height;
+				Title = "NDraz Notes";
+				_table = new UITableView(new CGRect(0, 0, width, height)) { AutoresizingMask = UIViewAutoresizing.All };
+				CreateTableItems();
+				Add(_table);
+
+				SetToolbarItems(new[] {
+			new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace) { Width = width - 50 },
+				new UIBarButtonItem(UIBarButtonSystemItem.Add, (s,e) =>
+				{ NavigationController.PushViewController(new CreateNoteViewController(), true); })}, false);
+
+				NavigationController.ToolbarHidden = false;
+				_updateThread = new Thread(UpdateList);
+				_updateThread.Start();
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
+		}
+
+		protected void CreateTableItems()
+		{
+			//var notes = new List<Note>();
+			try
+			{
+				var source = new TableSource(NoteDatabase.GetNotesFromDatabase(), this);
+				InvokeOnMainThread(() =>
+				{
+					_table.Source = source;
+				});
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
 		}
 
 
-		public override async void ViewWillAppear(bool animated)
+		public override void ViewWillAppear(bool animated)
 		{
+			try
+			{
 			base.ViewWillAppear(animated);
-			await CreateTableItems();
-			_isRunning = true;
-			if (!_updateThread.IsAlive) _updateThread.Start();
+
+				CreateTableItems();
+				_isRunning = true;
+				if (_updateThread.ThreadState != ThreadState.Running) _updateThread.Start();
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("Error in View Will Appear for Main View: " + ex.Message);
+			}
 		}
 
 		public override void ViewWillDisappear(bool animated)
@@ -57,12 +81,19 @@ namespace NotesSingle
 
 
 		private bool _isRunning = true;
-		public async void UpdateList()
+		public void UpdateList()
 		{
 			while (_isRunning)
 			{
-				Thread.Sleep(5000);
-				await CreateTableItems();
+				try
+				{
+					Thread.Sleep(5000);
+				 	CreateTableItems();
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine(ex.Message);
+				}
 			}
 		}
 	}
