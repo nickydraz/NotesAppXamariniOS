@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Foundation;
 using UIKit;
 
@@ -34,6 +35,9 @@ namespace NotesSingle
 
 				// make the window visible
 				Window.MakeKeyAndVisible();
+
+				var syncThread = new Thread(new ThreadStart(SyncDatabases));
+				syncThread.Start();
 
 				return true;
 			}
@@ -74,6 +78,15 @@ namespace NotesSingle
 		public override void WillTerminate(UIApplication application)
 		{
 			// Called when the application is about to terminate. Save data, if needed. See also DidEnterBackground.
+		}
+
+		public void SyncDatabases()
+		{
+			while (true)
+			{
+				Thread.Sleep(5000);
+				NoteDatabase.SyncDatabases();
+			}
 		}
 	}
 }

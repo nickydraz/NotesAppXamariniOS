@@ -11,7 +11,7 @@ namespace NotesSingle
 	{
 	    private UITableView _table;
 	    private Thread _updateThread;
-		public override void ViewDidLoad()
+		public async override void ViewDidLoad()
 		{
 			base.ViewDidLoad();
 			try
@@ -20,7 +20,7 @@ namespace NotesSingle
 				var height = View.Bounds.Height;
 				Title = "NDraz Notes";
 				_table = new UITableView(new CGRect(0, 0, width, height)) { AutoresizingMask = UIViewAutoresizing.All };
-				CreateTableItems();
+				await CreateTableItems();
 				Add(_table);
 
 				SetToolbarItems(new[] {
@@ -38,15 +38,16 @@ namespace NotesSingle
 			}
 		}
 
-		protected void CreateTableItems()
+		protected async Task CreateTableItems()
 		{
 			//var notes = new List<Note>();
 			try
 			{
-				var source = new TableSource(NoteDatabase.GetNotesFromDatabase(), this);
+				var source = new TableSource(await NoteDatabase.GetNotesFromLocal(), this);
 				InvokeOnMainThread(() =>
 				{
 					_table.Source = source;
+					_table.ReloadData();
 				});
 			}
 			catch (Exception ex)
@@ -56,13 +57,13 @@ namespace NotesSingle
 		}
 
 
-		public override void ViewWillAppear(bool animated)
+		public async override void ViewWillAppear(bool animated)
 		{
 			try
 			{
-			base.ViewWillAppear(animated);
+				base.ViewWillAppear(animated);
 
-				CreateTableItems();
+				await CreateTableItems();
 				_isRunning = true;
 				if (_updateThread.ThreadState != ThreadState.Running) _updateThread.Start();
 			}
@@ -81,14 +82,14 @@ namespace NotesSingle
 
 
 		private bool _isRunning = true;
-		public void UpdateList()
+		public async void UpdateList()
 		{
 			while (_isRunning)
 			{
 				try
 				{
 					Thread.Sleep(5000);
-				 	CreateTableItems();
+				 	await CreateTableItems();
 				}
 				catch (Exception ex)
 				{

@@ -87,14 +87,14 @@ namespace NotesSingle
 	                    {
 	                        string sTitle = _title.Text;
 	                        string sContent = _textview.Text;
-	                        CurrNote = await NoteDatabase.InsertNote(sTitle, sContent);
+							CurrNote = await NoteDatabase.InsertNoteToLocal(sTitle, sContent, 1);
 	                    }
 	                }
 	                else if (CurrNote != null)
 	                {
 	                    CurrNote.Title = _title.Text;
 	                    CurrNote.Content = _textview.Text;
-	                    await NoteDatabase.UpdateNote(CurrNote);
+						await NoteDatabase.UpdateNoteLocal(CurrNote);
 	                }
 	            });
 	        });

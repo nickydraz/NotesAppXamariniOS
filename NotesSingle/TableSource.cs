@@ -39,11 +39,11 @@ namespace NotesSingle
 		/// <summary>
 		/// Called when a row is touched
 		/// </summary>
-		public override void RowSelected(UITableView tableView, NSIndexPath indexPath)
+		public async override void RowSelected(UITableView tableView, NSIndexPath indexPath)
 		{
 			//UIAlertController okAlertController = UIAlertController.Create(tableItems[indexPath.Row].Title, tableItems[indexPath.Row].Content, UIAlertControllerStyle.Alert);
 			//okAlertController.AddAction(UIAlertAction.Create("OK", UIAlertActionStyle.Default, null));
-			var detailController = new NoteDetailViewController(NoteDatabase.GetNoteById(_tableItems[indexPath.Row].Id));
+			var detailController = new NoteDetailViewController(await NoteDatabase.GetNoteByIdFromLocal(_tableItems[indexPath.Row].Id));
 			_owner.NavigationController.PushViewController(detailController, true);
 
 			tableView.DeselectRow(indexPath, true);

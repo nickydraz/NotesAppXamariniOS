@@ -32,8 +32,8 @@ namespace NotesSingle
 			_contentView = CreateContentView();
 			View.Add(_contentView);
 
-			var updateThread = new Thread(StayUpdated);
-			updateThread.Start();
+			//var updateThread = new Thread(StayUpdated);
+			//updateThread.Start();
 		}
 
 		public UITextView CreateContentView()
@@ -70,12 +70,12 @@ namespace NotesSingle
 			this.NavigationController.PushViewController(new EditViewController(CurrNote), true);
 		}
 
-		public override void ViewWillAppear(bool animated)
+		public async override void ViewWillAppear(bool animated)
 		{
 			base.ViewWillAppear(animated);
 
 			//Refresh the note on the screen
-			CurrNote = NoteDatabase.GetNoteById(CurrNote.Id);
+			CurrNote = await NoteDatabase.GetNoteByIdFromLocal(CurrNote.Id);
 			UpdateView();
 			_isrunning = true;
 		}
@@ -87,12 +87,12 @@ namespace NotesSingle
 		}
 
 	    private bool _isrunning = true;
-		public void StayUpdated()
+		public async void StayUpdated()
 		{
 			while (_isrunning)
 			{
 				Thread.Sleep(5000);
-				CurrNote = NoteDatabase.GetNoteById(CurrNote.Id);
+				CurrNote = await NoteDatabase.GetNoteByIdFromLocal(CurrNote.Id);
 				InvokeOnMainThread(() =>
 				{
 					//CurrNote =  NoteDatabase.GetNoteById(CurrNote.Id);

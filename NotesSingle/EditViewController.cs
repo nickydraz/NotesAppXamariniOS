@@ -46,16 +46,16 @@ namespace NotesSingle
 			Add(_textview);
 			//Add(saveBtn);
 
-			UIApplication.Notifications.ObserveWillTerminate(async (sender, e) => {
-				await UpdateNote();
-			});
-			UIApplication.Notifications.ObserveDidEnterBackground(async (sender, e) =>
-			{
-				await UpdateNote();
-			});
+			//UIApplication.Notifications.ObserveWillTerminate(async (sender, e) => {
+			//	await UpdateNote();
+			//});
+			//UIApplication.Notifications.ObserveDidEnterBackground(async (sender, e) =>
+			//{
+			//	await UpdateNote();
+			//});
 
-			var saveThread = new Thread(SaveTimer);
-			saveThread.Start();
+			//var saveThread = new Thread(SaveTimer);
+			//saveThread.Start();
 		}
 
 		public override async void ViewWillDisappear(bool animated)
@@ -79,7 +79,7 @@ namespace NotesSingle
 				});
  				
 				//Don't update on the UI thread, in case it takes longer
-				await NoteDatabase.UpdateNote(CurrNote);
+				await NoteDatabase.UpdateNoteLocal(CurrNote);
 			}
 		}
 
@@ -88,7 +88,7 @@ namespace NotesSingle
 			try
 			{
 				CurrNote.Content = _textview.Text;
-				await NoteDatabase.UpdateNote(CurrNote);
+				await NoteDatabase.UpdateNoteLocal(CurrNote);
 			}
 			catch (Exception ex)
 			{
